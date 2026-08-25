@@ -30,3 +30,6 @@ phpstan.neon
 testbench.yaml
 /docs
 /coverage
+
+# Payload dumps the live carrier tests write for inspection
+/tests/Fixtures/responses/*-recorded.json

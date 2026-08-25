@@ -55,7 +55,11 @@ function liveReference(): string
     return 'SDK'.CarbonImmutable::now()->format('ymdHis').random_int(10, 99);
 }
 
-function liveShipment(string $reference, int $packages = 2): ShipmentData
+/**
+ * @param  list<int>|null  $sendPackages  which of the declared packages to register
+ *                                        on this call; null sends them all
+ */
+function liveShipment(string $reference, int $packages = 2, ?array $sendPackages = null): ShipmentData
 {
     return new ShipmentData(
         clientReference: $reference,
@@ -86,7 +90,7 @@ function liveShipment(string $reference, int $packages = 2): ShipmentData
                 depth: 0.2,
                 weight: 1.0,
             ),
-            range(1, $packages),
+            $sendPackages ?? range(1, $packages),
         ),
         observations1: 'SDK integration test — please ignore',
         carrier: 'SALVAT',
@@ -119,6 +123,8 @@ it('creates a shipment and returns ZPL plus an SSCC for every package', function
     foreach ($result->ssccs() as $sscc) {
         expect($sscc)->toHaveLength(20);
     }
+
+    liveCbl()->shipments()->deletePending([$reference]);
 });
 
 it('lists the new shipment as pending and confirms it', function (): void {
@@ -144,6 +150,54 @@ it('deletes a pending shipment again', function (): void {
     $cbl->shipments()->deletePending([$reference]);
 
     expect($cbl->shipments()->pending()->findByClientReference($reference))->toBeNull();
+});
+
+it('registers packages over several calls under one reference', function (): void {
+    $cbl = liveCbl();
+    $reference = liveReference();
+
+    // Declare three packages up front, then register them across two calls.
+    $first = $cbl->shipments()->create(liveShipment($reference, packages: 3, sendPackages: [1]));
+    $second = $cbl->shipments()->create(liveShipment($reference, packages: 3, sendPackages: [2, 3]));
+
+    expect($first->errorMessages())->toBe([])
+        ->and($second->errorMessages())->toBe([])
+        // Both calls belong to the same CBL shipment...
+        ->and($second->carrierReference)->toBe($first->carrierReference)
+        // ...and each returns only the packages it registered.
+        ->and(array_keys($first->labels()))->toBe([1])
+        ->and(array_keys($second->labels()))->toBe([2, 3]);
+
+    // Complete package count, so the shipment is closed and awaiting confirmation.
+    expect($cbl->shipments()->pending()->findByClientReference($reference)?->isClosed())->toBeTrue();
+
+    // Removing a package by SSCC drops it back to pending.
+    $sscc = $second->ssccs()[3];
+    expect($cbl->shipments()->deletePackages([$sscc])->deletedPackages)->toBe(1)
+        ->and($cbl->shipments()->pending()->findByClientReference($reference)?->isClosed())->toBeFalse();
+
+    $cbl->shipments()->deletePending([$reference]);
+});
+
+it('treats an unknown SSCC as a silent no-op rather than an error', function (): void {
+    $result = liveCbl()->shipments()->deletePackages(['00000000000000000000']);
+
+    expect($result->deletedPackages)->toBe(0)
+        ->and($result->errorMessages())->toBe([]);
+});
+
+it('reprints the label of an existing package', function (): void {
+    $cbl = liveCbl();
+    $reference = liveReference();
+
+    $created = $cbl->shipments()->create(liveShipment($reference));
+    $reprinted = $cbl->shipments()->reprint($reference, [1]);
+
+    expect($reprinted->errorMessages())->toBe([])
+        ->and($reprinted->labels())->toHaveCount(1)
+        ->and($reprinted->ssccs()[1])->toBe($created->ssccs()[1]);
+
+    $cbl->shipments()->deletePending([$reference]);
 });
 
 it('reads status by reference', function (): void {

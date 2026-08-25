@@ -133,6 +133,51 @@ $result->warningMessages();  // ['Magnitude weight in field package 1 is too big
 Labels are returned untouched. Rendering them is the caller's job — pair this with
 `smart-dato/zpl` or `smart-dato/labelary`.
 
+### Registering packages over several calls
+
+A shipment declares its total package count up front, and the packages may arrive
+across several `create()` calls that reuse one `clientReference` — the flow CBL's
+own samples call "half way". Each call repeats `numPackages` and sends only the
+packages it is registering:
+
+```php
+$cbl->shipments()->create(new ShipmentData(
+    clientReference: 'ORDER-4242',
+    numPackages: 3,                 // the total, repeated on every call
+    packages: [new PackageData(packageNumber: 1, weight: 1.0)],
+    // … sender, receiver, weight
+));
+
+$cbl->shipments()->create(new ShipmentData(
+    clientReference: 'ORDER-4242',  // same reference joins the same shipment
+    numPackages: 3,
+    packages: [
+        new PackageData(packageNumber: 2, weight: 1.0),
+        new PackageData(packageNumber: 3, weight: 1.0),
+    ],
+    // …
+));
+```
+
+Both calls return the same `carrierReference`, and each returns labels for **only
+the packages that call registered**. The shipment sits at `pending` until the
+declared count is complete, then moves to `closed` and waits for confirmation.
+
+Accounts *without* day confirmation cannot do this: there, a mismatch between
+`numPackages` and the packages sent is a package-count error rather than a
+part-registered shipment.
+
+### A shipment cannot be modified
+
+Only the package count can change, and only if your account allows it. Every other
+field is fixed once sent — to correct an unconfirmed shipment, delete it and create
+it again:
+
+```php
+$cbl->shipments()->deletePending(['ORDER-4242']);
+$cbl->shipments()->create($corrected);
+```
+
 ### Units and limits
 
 - Weight in kilograms (max 999999), lengths in metres (max 999.99), volume in cubic
@@ -177,13 +222,34 @@ account.
 ## Delete and reprint
 
 ```php
-$cbl->shipments()->deletePending(['ORDER-4242'])->deletedShipments;
+$cbl->shipments()->deletePending(['ORDER-4242'])->deletedShipments;      // 1
 $cbl->shipments()->deleteConfirmed(['ORDER-4242']);   // marks only — call your CBL branch
-$cbl->shipments()->deletePackages(['00000000000000254823']);
+$cbl->shipments()->deletePackages(['00000000000000254823'])->deletedPackages;  // 1
 
 $reprint = $cbl->shipments()->reprint('ORDER-4242', [1, 2]);
 $reprint->labels();                                   // same envelope as create()
 ```
+
+A reference or SSCC CBL does not recognise is a **silent no-op** — the count comes
+back `0` with an empty `errorList`, so check the count rather than the absence of
+errors. Deleting a package from a complete shipment moves it from `closed` back to
+`pending`.
+
+## Pickups
+
+Where CBL has enabled a pickup service on the account, it is selected per shipment
+through `serviceType`, with its own observation fields:
+
+```php
+new ShipmentData(
+    // …
+    serviceType: 'YOUR-CBL-SERVICE-CODE',
+    pickupObservations1: 'Ring the bell at the loading bay',
+    pickupObservations2: 'Driver must ask for the warehouse desk',
+);
+```
+
+The codes are account-specific — ask CBL which apply to yours.
 
 ## Track a shipment
 

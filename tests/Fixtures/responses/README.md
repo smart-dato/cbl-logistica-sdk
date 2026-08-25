@@ -11,6 +11,11 @@ Every file here was **recorded from the live CBL test account** (client code
 - `create-shipment-ok` holds genuine ZPL, and `PrintShipmentPackages` answers with
   the identical envelope but a null `carrierReference` and `clientReference`.
 
+`create-shipment-partial`, `delete-shipment-packages` and
+`pending-shipments-incomplete` record the incremental-package flow: registering
+part of a declared shipment, then deleting one package by SSCC, which moves the
+shipment from `closed` back to `pending`.
+
 `create-shipment-error` and `status-clamped` are the only constructed payloads —
 the test account produced no failing shipment or over-wide window to record. Their
 field names follow the manual's samples.

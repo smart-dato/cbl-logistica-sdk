@@ -1,0 +1,19 @@
+{
+    "carrierReference": "12529",
+    "clientReference": null,
+    "status": "OK",
+    "errorList": [],
+    "warningList": [],
+    "packagesTags": [
+        {
+            "packageNumber": 2,
+            "sscc": "00000000000000254861",
+            "tag": "^XA^XZ"
+        },
+        {
+            "packageNumber": 3,
+            "sscc": "00000000000000254878",
+            "tag": "^XA^XZ"
+        }
+    ]
+}

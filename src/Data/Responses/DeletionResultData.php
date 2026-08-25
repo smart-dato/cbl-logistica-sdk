@@ -8,8 +8,11 @@ use Spatie\LaravelData\Data;
 
 /**
  * The shape the three delete endpoints answer with. DeletePendingShipments and
- * DeleteConfirmedShipments report deletedShipments; DeleteShipmentPackages was
- * observed reporting nothing but the envelope.
+ * DeleteConfirmedShipments report deletedShipments, DeletShipmentPackages reports
+ * deletedPackages.
+ *
+ * An SSCC or reference CBL does not know is a silent no-op: the count comes back 0
+ * with an empty errorList, so check the count rather than the absence of errors.
  */
 final class DeletionResultData extends Data
 {

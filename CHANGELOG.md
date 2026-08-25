@@ -24,3 +24,13 @@ the manual:
 - `PrintShipmentPackages` answers with the same envelope as `CreateShipment`, so
   `reprint()` hands back labels.
 - Date windows are clamped client-side: 30 days for status, 7 for proof of delivery.
+- `DeletShipmentPackages` really is spelled that way. The manual's
+  `DeleteShipmentPackages` returns 404; the typo is part of the route.
+- Packages may be registered across several `create()` calls that share one
+  `clientReference`. Each call returns labels only for the packages it registered,
+  and the shipment moves between `pending` and `closed` as the declared count is
+  reached — deleting a package moves it back.
+- A reference or SSCC CBL does not recognise is a silent no-op: the count is 0 with
+  an empty `errorList`, so callers must check the count.
+- Beyond the package count, a shipment cannot be modified; correcting one means
+  deleting and recreating it.

@@ -1,0 +1,14 @@
+{
+    "pendingShipments": [
+        {
+            "clientCode": "000000311",
+            "createDate": "25/08/2026",
+            "clientReference": "HALFWAY140814",
+            "carrierReference": "12529",
+            "numPackages": "3",
+            "weight": "3",
+            "postponedDate": null,
+            "status": "pending"
+        }
+    ]
+}
