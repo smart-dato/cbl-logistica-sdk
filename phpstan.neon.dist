@@ -1,0 +1,14 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 8
+    paths:
+        - src
+        - config
+    # This package ships its own config file, so larastan is told where it lives —
+    # without this it looks for the host application's config_path() and reports
+    # every env() call here as being outside the config directory.
+    configDirectories:
+        - config
+    tmpDir: build/phpstan

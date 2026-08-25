@@ -1,0 +1,14 @@
+{
+    "pendingShipments": [
+        {
+            "clientCode": "000000311",
+            "createDate": "21/08/2026",
+            "clientReference": "TEST_21_08",
+            "carrierReference": "12481",
+            "numPackages": "2",
+            "weight": "1000",
+            "postponedDate": null,
+            "status": "closed"
+        }
+    ]
+}

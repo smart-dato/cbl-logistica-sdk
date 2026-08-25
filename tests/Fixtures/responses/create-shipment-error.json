@@ -1,0 +1,17 @@
+{
+    "carrierReference": "",
+    "status": "ERROR",
+    "errorList": [
+        {
+            "errorCode": "",
+            "errorDescription": "Wrong Postal Code"
+        }
+    ],
+    "warningList": [
+        {
+            "warningCode": "105",
+            "warningDescription": "Magnitude weight in field package 1 is too big"
+        }
+    ],
+    "packagesTags": []
+}

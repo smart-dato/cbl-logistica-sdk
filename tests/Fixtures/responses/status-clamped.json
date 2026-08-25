@@ -1,0 +1,10 @@
+{
+    "statusList": [],
+    "errorList": [],
+    "warningList": [
+        {
+            "warningCode": 300,
+            "warningDescription": "The date difference is bigger than maximum 30 days"
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "statusList": [
+        {
+            "carrierNumber": "999935360776",
+            "clientReference": "P01132762",
+            "statusDate": "2026-06-19T12:50:42",
+            "statusCode": "ALTA",
+            "statusDescription": "ALTA ",
+            "statusObservations": null
+        }
+    ],
+    "errorList": [],
+    "warningList": []
+}
