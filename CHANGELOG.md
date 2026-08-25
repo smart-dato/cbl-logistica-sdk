@@ -2,7 +2,7 @@
 
 All notable changes to `cbl-logistica-sdk` will be documented in this file.
 
-## 0.0.1 - unreleased
+## 0.0.1 - 2026-08-25
 
 Initial release. Covers the CBL Logistica web service: shipment registration with
 ZPL labels, day confirmation, pending lookup, the three delete operations, label
